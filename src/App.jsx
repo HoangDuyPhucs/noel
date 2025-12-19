@@ -1,59 +1,35 @@
-import React, { useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import './App.css';
+
 import santaDogImg from './assets/santa-dog.png';
-import giftImg from './assets/gift.png';
+import giftCloseImg from './assets/gift-close.png';
+import giftOpenImg from './assets/gift-open.png';
 import fingerImg from './assets/finger.png';
 
-
 const SantaDogImage = () => (
-  <img
-    src={santaDogImg}
-    alt="Santa and Dog Sleigh"
-    className="santa-dog-image"
-    draggable={false}
-  />
-);
-const GiftImage = () => (
-  <img
-    src={giftImg}
-    alt="Gift Box"
-    className="gift-image"
-    draggable={false}
-  />
+  <img src={santaDogImg} className="santa-dog-image" draggable={false} />
 );
 
-const FingerImage = () => (
-  <img
-    src={fingerImg}
-    alt="Finger"
-    className="finger-image"
-    draggable={false}
-  />
-);
-
-
-// SVG Middle Finger Component
-// Snowflake Component
 const Snowflakes = () => {
-  const flakes = Array.from({ length: 50 }, (_, i) => ({
+  const flakes = Array.from({ length: 40 }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
     delay: Math.random() * 10,
-    duration: 10 + Math.random() * 10,
-    size: 0.5 + Math.random() * 1
+    duration: 8 + Math.random() * 10,
+    size: 0.6 + Math.random()
   }));
 
   return (
     <>
-      {flakes.map(flake => (
+      {flakes.map(f => (
         <div
-          key={flake.id}
+          key={f.id}
           className="snowflake"
           style={{
-            left: `${flake.left}%`,
-            animationDelay: `${flake.delay}s`,
-            animationDuration: `${flake.duration}s`,
-            fontSize: `${flake.size}rem`
+            left: `${f.left}%`,
+            animationDelay: `${f.delay}s`,
+            animationDuration: `${f.duration}s`,
+            fontSize: `${f.size}rem`
           }}
         >
           ❄
@@ -63,64 +39,88 @@ const Snowflakes = () => {
   );
 };
 
-function App() {
+export default function App() {
+  const santaRef = useRef(null);
+
   const [restartKey, setRestartKey] = useState(0);
+  const [giftPos, setGiftPos] = useState(null);
+  const [giftStage, setGiftStage] = useState('hidden');
+  // hidden → drop → open → finger
 
-  const [musicPlaying, setMusicPlaying] = useState(false);
-  const [giftOpened, setGiftOpened] = useState(false);
-  const [audioElement] = useState(new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'));
-  const restartAnimation = () => {
-      setGiftOpened(false);   // 👈 QUAN TRỌNG
+  /* Santa tới giữa → thả quà */
+  useEffect(() => {
+    setGiftStage('hidden');
+    setGiftPos(null);
 
-    setRestartKey(prev => prev + 1);
-  };
-
-  const toggleMusic = () => {
-    if (musicPlaying) {
-      audioElement.pause();
-    } else {
-      audioElement.play().catch(() => {
-        console.log('Audio playback failed');
+    const t = setTimeout(() => {
+      if (!santaRef.current) return;
+      const rect = santaRef.current.getBoundingClientRect();
+      setGiftPos({
+        left: rect.left + rect.width / 2,
+        top: rect.top + rect.height / 2
       });
-      audioElement.loop = true;
-    }
-    setMusicPlaying(!musicPlaying);
-  };
+      setGiftStage('drop');
+    }, 16000 * 0.55);
 
-  const handleGiftAnimationEnd = () => {
-    setGiftOpened(true);
-  };
+    return () => clearTimeout(t);
+  }, [restartKey]);
+
+  /* Điều khiển stage */
+  useEffect(() => {
+    if (giftStage === 'drop') {
+      const t = setTimeout(() => setGiftStage('open'), 2800);
+      return () => clearTimeout(t);
+    }
+    if (giftStage === 'open') {
+      const t = setTimeout(() => setGiftStage('finger'), 500);
+      return () => clearTimeout(t);
+    }
+  }, [giftStage]);
 
   return (
     <div className="app">
       <Snowflakes />
-      
-      <div className="ground"></div>
-      
-<div className="scene" key={restartKey}>
-<div className="moving-group">
-  <SantaDogImage />
-</div>
+      <div className="ground" />
 
-        
-<div className="gift-container" onAnimationEnd={handleGiftAnimationEnd}>
-  {!giftOpened && <GiftImage />}
-</div>
+      <div className="scene" key={restartKey}>
+        <div className="moving-group" ref={santaRef}>
+          <SantaDogImage />
+        </div>
 
-{giftOpened && (
-  <div className="finger-container">
-    <FingerImage />
-  </div>
-)}
+        {giftPos && giftStage !== 'hidden' && (
+          <div
+            className={`gift-container ${giftStage !== 'drop' ? 'opened' : ''}`}
+            style={{
+              left: giftPos.left,
+              top: giftPos.top
+            }}
+          >
+            <div className="gift-box">
+              <img
+                src={giftStage === 'drop' ? giftCloseImg : giftOpenImg}
+                className="gift-base"
+                draggable={false}
+              />
 
+              {giftStage === 'finger' && (
+                <img
+                  src={fingerImg}
+                  className="finger-from-gift"
+                  draggable={false}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
-      <button className="music-button" onClick={restartAnimation}>
+
+      <button
+        className="music-button"
+        onClick={() => setRestartKey(k => k + 1)}
+      >
         🔄 Restart Animation
       </button>
-      <button className="music-button" onClick={toggleMusic}>
-        {musicPlaying ? '🔇 Stop Music' : '🎵 Play Music'}
-      </button>
-      
+
       <div className="title">
         <h1>Merry Christmas! 🎄</h1>
         <p>Santa has a special delivery for you...</p>
@@ -128,5 +128,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
