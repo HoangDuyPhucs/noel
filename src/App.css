@@ -12,7 +12,7 @@ html, body {
 }
 
 :root {
-  --santa-duration: 16s;
+  --santa-duration: 13s;
   --gift-size: clamp(100px, 25vw, 140px);
   --santa-size: clamp(200px, 50vw, 320px);
 }
@@ -124,7 +124,7 @@ html, body {
   position: absolute;
   left: 50%;
   bottom: 28%;
-  width: 80%;
+  width: 150%;
   transform: translate(-50%, -40px) scale(0.3);
   opacity: 0;
   animation: fingerFallOut 0.9s cubic-bezier(0.68,-0.55,0.265,1.55) forwards;
@@ -157,6 +157,7 @@ html, body {
   text-align: center;
   padding: 0 20px;
   width: 100%;
+  z-index: 20;
 }
 
 .title h1 {
@@ -170,7 +171,7 @@ html, body {
 
 /* 🔄 Button - Responsive */
 .music-button {
-  position: absolute;
+  /* position: absolute; */
   top: clamp(15px, 3vh, 3vh);
   right: clamp(15px, 3vw, 3vw);
   padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
@@ -250,5 +251,59 @@ html, body {
   .app {
     background-size: cover;
     background-position: center center;
+  }
+}
+/* ===== CONTROL BUTTONS ===== */
+.control-buttons {
+  position: absolute;
+top: clamp(80px, 14vh, 140px);
+  right: 3vw;
+  z-index: 50;
+}
+
+/* Nút chung */
+.control-btn {
+  min-width: 140px;
+  height: 42px;
+  font-weight: 600;
+  border-radius: 999px !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+}
+
+/* Restart */
+.restart-btn {
+  background: linear-gradient(135deg, #ff416c, #ffb347) !important;
+  border: none !important;
+}
+
+.restart-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 30px rgba(255, 180, 0, 0.6);
+}
+
+/* Music */
+.music-btn {
+  background: linear-gradient(135deg, #36d1dc, #5b86e5);
+  color: white;
+  border: none;
+}
+
+.music-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 30px rgba(80, 150, 255, 0.6);
+}
+
+/* ===== MOBILE FIX ===== */
+@media (max-width: 768px) {
+  .control-buttons {
+    top: 90px;
+    right: 10px;
+  }
+
+  .control-btn {
+    min-width: 120px;
+    height: 38px;
+    font-size: 13px;
   }
 }
